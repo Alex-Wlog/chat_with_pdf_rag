@@ -3,7 +3,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
-import dataWhaleLogo from './assets/datawhale-logo.svg'
+import dataWhaleLogo from './assets/icon_whitebg.jpg'
 import userAvatar from './assets/user-avatar.svg'
 import botAvatar from './assets/bot-avatar.svg'
 import PDFUploader from './components/PDFUploader.vue'
@@ -239,13 +239,18 @@ body {
 .logo-container {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 }
 
 .logo {
+  position: absolute;
+  left: 0;
   height: 50px;
+  width: auto;
 }
 
 .title {
@@ -253,6 +258,9 @@ body {
   font-size: 1.8rem;
   color: var(--text-color);
   font-weight: bold;
+  text-align: center;
+  flex: 1;
+  padding: 0 60px; /* 为logo预留空间 */
 }
 
 .main-content {
@@ -340,12 +348,15 @@ body {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  overflow: hidden;
 }
 
 .chat-container {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
+  margin-bottom: 0;
 }
 
 .message {
@@ -411,6 +422,10 @@ body {
 .input-container {
   padding: 1rem;
   border-top: 1px solid var(--border-color);
+  position: sticky;
+  bottom: 0;
+  background: white;
+  margin-top: auto;
 }
 
 .input-wrapper {
@@ -426,7 +441,9 @@ body {
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.5;
-  min-height: 80px;
+  min-height: 60px;
+  max-height: 150px;
+  overflow-y: auto;
 }
 
 .input-field:focus {
