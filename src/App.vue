@@ -447,12 +447,14 @@ body {
   padding: 1rem;
   border-top: 1px solid var(--border-color);
   background: white;
-  position: relative; /* 改为相对定位 */
+  position: relative;
   z-index: 1;
+  margin: 0 1rem 1rem 1rem; /* 添加左右边距 */
 }
 
 .input-wrapper {
   margin-bottom: 1rem;
+  position: relative; /* 添加相对定位 */
 }
 
 .input-field {
@@ -467,6 +469,7 @@ body {
   min-height: 60px;
   max-height: 150px;
   overflow-y: auto;
+  box-sizing: border-box; /* 确保padding不会增加宽度 */
 }
 
 .input-field:focus {
@@ -478,6 +481,7 @@ body {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+  padding: 0 1rem; /* 添加左右内边距 */
 }
 
 .send-button, .clear-button {
