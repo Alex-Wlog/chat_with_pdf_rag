@@ -12,6 +12,7 @@
     "@mdi/font": "^7.4.47",
     "highlight.js": "^11.8.0",
     "marked": "^5.0.2",
+    "pdfjs-dist": "^3.11.174",
     "vue": "^3.3.4"
   },
   "devDependencies": {
