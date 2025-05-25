@@ -6,6 +6,7 @@ import 'highlight.js/styles/github.css'
 import dataWhaleLogo from './assets/datawhale-logo.svg'
 import userAvatar from './assets/user-avatar.svg'
 import botAvatar from './assets/bot-avatar.svg'
+import PDFUploader from './components/PDFUploader.vue'
 
 // 配置 marked
 marked.setOptions({
@@ -23,6 +24,18 @@ const userInput = ref('')
 const chatContainer = ref(null)
 const isLoading = ref(false)
 const errorMessage = ref('')
+const selectedModel = ref('gpt-3.5-turbo')
+const uploadedPDFContent = ref('')
+
+// 处理 PDF 文件上传完成
+const handlePDFProcessed = (fileData) => {
+  uploadedPDFContent.value = fileData.text
+  messages.value.push({
+    type: 'system',
+    content: `已成功上传并处理文件：${fileData.name}`,
+    timestamp: new Date().toLocaleTimeString()
+  })
+}
 
 // 渲染消息（支持 Markdown）
 const renderMessage = (content) => {
@@ -39,6 +52,12 @@ const scrollToBottom = () => {
 // 清空对话
 const clearChat = () => {
   messages.value = []
+  // 添加欢迎消息
+  messages.value.push({
+    type: 'bot',
+    content: '欢迎使用 Datawhale 聊天助手！我可以帮助您回答问题。',
+    timestamp: new Date().toLocaleTimeString()
+  })
 }
 
 // 发送消息
@@ -100,59 +119,88 @@ onMounted(() => {
     <header class="header">
       <div class="logo-container">
         <img :src="dataWhaleLogo" alt="Datawhale Logo" class="logo" />
-        <h1 class="title">Datawhale 智能助手</h1>
+        <h1 class="title">基于大语言模型的金融研报年报智能问答系统</h1>
       </div>
     </header>
     
     <main class="main-content">
-      <div class="chat-container" ref="chatContainer">
-        <div v-for="(message, index) in messages" :key="index" class="message" :class="message.type">
-          <div class="message-avatar">
-            <img :src="message.type === 'user' ? userAvatar : botAvatar" :alt="message.type">
-          </div>
-          <div class="message-wrapper">
-            <div class="message-header">
-              <span class="message-sender">{{ message.type === 'user' ? '你' : 'AI 助手' }}</span>
-              <span class="message-time">{{ message.timestamp }}</span>
-            </div>
-            <div class="message-content" v-html="renderMessage(message.content)"></div>
-          </div>
+      <!-- 左侧面板 -->
+      <div class="left-panel">
+        <div class="panel-header">
+          <h2>知识库配置</h2>
         </div>
-        <div v-if="isLoading" class="message bot">
-          <div class="message-avatar">
-            <img :src="botAvatar" alt="bot">
+        <div class="panel-content">
+          <div class="config-section">
+            <h3>模型选择</h3>
+            <select v-model="selectedModel" class="select-input">
+              <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="other">其他模型</option>
+            </select>
           </div>
-          <div class="message-content loading">
-            <div class="typing-indicator">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
+          <div class="config-section">
+            <h3>文档上传</h3>
+            <PDFUploader :onFileProcessed="handlePDFProcessed" />
           </div>
         </div>
       </div>
-      
-      <div class="input-container">
-        <div class="input-wrapper">
-          <textarea 
-            v-model="userInput" 
-            @keyup.enter.exact="sendMessage"
-            @keydown.enter.exact.prevent
-            placeholder="输入您的问题..."
-            rows="1"
-            class="input-field"
-          ></textarea>
-          <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+      <!-- 右侧聊天区域 -->
+      <div class="right-panel">
+        <div class="chat-container" ref="chatContainer">
+          <div v-for="(message, index) in messages" :key="index" 
+               class="message" :class="message.type">
+            <div class="message-avatar">
+              <img :src="message.type === 'user' ? userAvatar : botAvatar" :alt="message.type">
+            </div>
+            <div class="message-wrapper">
+              <div class="message-header">
+                <span class="message-sender">
+                  {{ message.type === 'user' ? '用户' : message.type === 'system' ? '系统' : 'AI 助手' }}
+                </span>
+                <span class="message-time">{{ message.timestamp }}</span>
+              </div>
+              <div class="message-content" v-html="renderMessage(message.content)"></div>
+            </div>
+          </div>
+          <div v-if="isLoading" class="message bot">
+            <div class="message-avatar">
+              <img :src="botAvatar" alt="bot">
+            </div>
+            <div class="message-content loading">
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
         </div>
-        <button 
-          @click="sendMessage" 
-          class="send-button"
-          :disabled="isLoading || !userInput.trim()"
-        >
-          <span v-if="!isLoading">发送</span>
-          <span v-else>发送中...</span>
-        </button>
-        <button @click="clearChat" class="clear-button">清空对话</button>
+        
+        <div class="input-container">
+          <div class="input-wrapper">
+            <textarea 
+              v-model="userInput" 
+              @keyup.enter.exact="sendMessage"
+              @keydown.enter.exact.prevent
+              placeholder="请输入您的问题..."
+              rows="3"
+              class="input-field"
+            ></textarea>
+            <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+          </div>
+          <div class="button-group">
+            <button 
+              @click="sendMessage" 
+              class="send-button"
+              :disabled="isLoading || !userInput.trim()"
+            >
+              <span v-if="!isLoading">发送</span>
+              <span v-else>发送中...</span>
+            </button>
+            <button @click="clearChat" class="clear-button">清空对话</button>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -165,71 +213,145 @@ onMounted(() => {
   --background-color: #f5f5f5;
   --text-color: #333333;
   --border-color: #dddddd;
+  --panel-width: 300px;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: "Times New Roman", SimSun, serif;
   color: var(--text-color);
+  background-color: var(--background-color);
 }
 
 .app-container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .header {
   background-color: #ffffff;
-  padding: 1rem;
+  padding: 1rem 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 100;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .logo {
-  height: 40px;
+  height: 50px;
 }
 
 .title {
   margin: 0;
-  font-size: 1.5rem;
-  color: var(--primary-color);
+  font-size: 1.8rem;
+  color: var(--text-color);
+  font-weight: bold;
 }
 
 .main-content {
   flex: 1;
   display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  gap: 2rem;
+  height: calc(100vh - 90px);
+}
+
+/* 左侧面板样式 */
+.left-panel {
+  width: var(--panel-width);
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
   flex-direction: column;
+}
+
+.panel-header {
   padding: 1rem;
-  background-color: var(--background-color);
-  gap: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.panel-content {
+  padding: 1rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.config-section {
+  margin-bottom: 2rem;
+}
+
+.config-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.select-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.upload-area {
+  border: 2px dashed var(--border-color);
+  padding: 1rem;
+  text-align: center;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-button {
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* 右侧聊天区域样式 */
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .chat-container {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
 }
 
 .message {
   display: flex;
   margin-bottom: 1.5rem;
   align-items: flex-start;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .message-avatar {
@@ -243,11 +365,11 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .message-wrapper {
   flex: 1;
+  max-width: 80%;
 }
 
 .message-header {
@@ -266,7 +388,8 @@ body {
   padding: 1rem;
   border-radius: 8px;
   background-color: var(--background-color);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .message.user .message-content {
@@ -281,23 +404,17 @@ body {
 }
 
 .message-content :deep(code) {
-  font-family: 'Fira Code', monospace;
+  font-family: "Consolas", "Microsoft YaHei", monospace;
   font-size: 0.9em;
 }
 
 .input-container {
-  display: flex;
-  gap: 1rem;
   padding: 1rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-top: 1px solid var(--border-color);
 }
 
 .input-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 1rem;
 }
 
 .input-field {
@@ -305,10 +422,11 @@ body {
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  resize: none;
+  resize: vertical;
   font-family: inherit;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  line-height: 1.5;
+  min-height: 80px;
 }
 
 .input-field:focus {
@@ -316,14 +434,14 @@ body {
   border-color: var(--primary-color);
 }
 
-.error-message {
-  color: #dc3545;
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
+.button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
 }
 
 .send-button, .clear-button {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 2rem;
   border: none;
   border-radius: 4px;
   font-weight: 500;
@@ -376,30 +494,13 @@ body {
   40% { transform: scale(1); }
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .header {
-    padding: 0.5rem;
-  }
-  
-  .logo {
-    height: 32px;
-  }
-  
-  .title {
-    font-size: 1.2rem;
-  }
-  
-  .main-content {
-    padding: 0.5rem;
-  }
-  
-  .input-container {
-    flex-direction: column;
-  }
-  
-  .send-button, .clear-button {
-    width: 100%;
-  }
+/* 添加系统消息样式 */
+.message.system .message-content {
+  background-color: #e8eaf6;
+  color: #3f51b5;
+}
+
+.message.system .message-sender {
+  color: #3f51b5;
 }
 </style>
