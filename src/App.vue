@@ -270,7 +270,8 @@ body {
   margin: 0 auto;
   padding: 2rem;
   gap: 2rem;
-  height: calc(100vh - 90px);
+  min-height: calc(100vh - 90px);
+  overflow: hidden; /* 防止内部溢出 */
 }
 
 /* 左侧面板样式 */
@@ -281,6 +282,8 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  max-height: calc(100vh - 130px); /* 设置最大高度 */
+  overflow: hidden; /* 防止内部溢出 */
 }
 
 .panel-header {
@@ -297,7 +300,7 @@ body {
 .panel-content {
   padding: 1rem;
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* 内部可滚动 */
 }
 
 .config-section {
@@ -348,15 +351,36 @@ body {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  height: 100%;
-  overflow: hidden;
+  max-height: calc(100vh - 130px); /* 设置最大高度 */
+  overflow: hidden; /* 防止内部溢出 */
 }
 
 .chat-container {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* 聊天历史可滚动 */
   padding: 1.5rem;
   margin-bottom: 0;
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* Webkit浏览器的滚动条样式 */
+.chat-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
 .message {
@@ -422,10 +446,9 @@ body {
 .input-container {
   padding: 1rem;
   border-top: 1px solid var(--border-color);
-  position: sticky;
-  bottom: 0;
   background: white;
-  margin-top: auto;
+  position: relative; /* 改为相对定位 */
+  z-index: 1;
 }
 
 .input-wrapper {
