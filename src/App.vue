@@ -55,7 +55,7 @@ const clearChat = () => {
   // 添加欢迎消息
   messages.value.push({
     type: 'bot',
-    content: '欢迎使用 Datawhale 聊天助手！我可以帮助您回答问题。',
+    content: '欢迎使用 金融研报智能问答系统！我可以帮助您回答问题。',
     timestamp: new Date().toLocaleTimeString()
   })
 }
@@ -108,7 +108,7 @@ onMounted(() => {
   // 添加欢迎消息
   messages.value.push({
     type: 'bot',
-    content: '欢迎使用 Datawhale 聊天助手！我可以帮助您回答问题。',
+    content: '欢迎使用 金融研报智能问答系统！我可以帮助您回答问题。',
     timestamp: new Date().toLocaleTimeString()
   })
 })
